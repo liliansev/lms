@@ -26,7 +26,7 @@ services:
 
   frappe:
     image: frappe/bench:latest
-    command: bash -c "ls -la /docker && bash /docker/init.sh"
+    command: bash -c "ls -la /scripts && bash /scripts/init.sh"
     environment:
       - SHELL=/bin/bash
       - FRAPPE_SITE_NAME=lms.goats.fr
@@ -37,7 +37,7 @@ services:
     volumes:
       - type: bind
         source: ./docker
-        target: /docker
+        target: /scripts
       - frappe-sites:/home/frappe/frappe-bench/sites
       - frappe-logs:/home/frappe/frappe-bench/logs
     ports:
