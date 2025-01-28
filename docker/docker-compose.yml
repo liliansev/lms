@@ -7,26 +7,57 @@ services:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
       - --skip-character-set-client-handshake
-      - --skip-innodb-read-only-compressed # Temporary fix for MariaDB 10.6
+      - --skip-innodb-read-only-compressed
     environment:
       MYSQL_ROOT_PASSWORD: 123
+      MYSQL_DATABASE: frappe
     volumes:
       - mariadb-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
 
-  redis:
+  redis-cache:
     image: redis:alpine
+    volumes:
+      - redis-cache-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 3s
+      retries: 10
+
+  redis-queue:
+    image: redis:alpine
+    volumes:
+      - redis-queue-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 3s
+      retries: 10
 
   frappe:
-    image: frappe/bench:latest
-    command: bash /workspace/init.sh
+    image: frappe/frappe-worker:v14
+    command: bash -c "bench init --skip-redis-config-generation frappe-bench && cd frappe-bench && bench get-app lms https://github.com/frappe/lms.git && bench new-site a08k88gcg4s00scwsowg0koo.49.12.194.101.sslip.io --admin-password=admin123 --db-host=mariadb --db-root-password=123 && bench --site a08k88gcg4s00scwsowg0koo.49.12.194.101.sslip.io install-app lms && bench start"
     environment:
       - SHELL=/bin/bash
-    working_dir: /home/frappe
+      - FRAPPE_PY=0.0.0.0:8000
+      - FRAPPE_SITE_NAME=a08k88gcg4s00scwsowg0koo.49.12.194.101.sslip.io
+      - REDIS_CACHE=redis-cache:6379
+      - REDIS_QUEUE=redis-queue:6379
     volumes:
-      - .:/workspace
+      - frappe-sites:/home/frappe/frappe-bench/sites
+      - frappe-logs:/home/frappe/frappe-bench/logs
     ports:
       - 8090:8000
-      - 9000:9000
+    depends_on:
+      - mariadb
+      - redis-cache
+      - redis-queue
 
 volumes:
   mariadb-data:
+  redis-cache-data:
+  redis-queue-data:
+  frappe-sites:
+  frappe-logs:
