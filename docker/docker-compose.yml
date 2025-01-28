@@ -13,20 +13,26 @@ services:
       - MYSQL_DATABASE=frappe
     volumes:
       - mariadb-data:/var/lib/mysql
+    networks:
+      - frappe_network
 
   redis-cache:
     image: redis:alpine
     volumes:
       - redis-cache-data:/data
+    networks:
+      - frappe_network
 
   redis-queue:
     image: redis:alpine
     volumes:
       - redis-queue-data:/data
+    networks:
+      - frappe_network
 
   frappe:
     image: frappe/bench:latest
-    command: bash /scripts/init.sh
+    command: bash /docker/init.sh  # Correct path to the init.sh file
     environment:
       - SHELL=/bin/bash
       - FRAPPE_SITE_NAME=lms.goats.fr
@@ -35,17 +41,17 @@ services:
       - NODE_VERSION_DEVELOP=18.16.0
     working_dir: /home/frappe
     volumes:
-      - type: bind
-        source: .
-        target: /scripts
+      - ./docker:/docker  # Correctly bind the `docker` folder
       - frappe-sites:/home/frappe/frappe-bench/sites
       - frappe-logs:/home/frappe/frappe-bench/logs
     ports:
-      - 90:8000
+      - 90:8000  # Expose port 8000 on port 90 of the host
     depends_on:
       - mariadb
       - redis-cache
       - redis-queue
+    networks:
+      - frappe_network
 
 volumes:
   mariadb-data:
@@ -53,3 +59,7 @@ volumes:
   redis-queue-data:
   frappe-sites:
   frappe-logs:
+
+networks:
+  frappe_network:
+    driver: bridge
