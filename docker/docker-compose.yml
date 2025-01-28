@@ -7,45 +7,26 @@ services:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
       - --skip-character-set-client-handshake
-      - --skip-innodb-read-only-compressed
+      - --skip-innodb-read-only-compressed # Temporary fix for MariaDB 10.6
     environment:
       MYSQL_ROOT_PASSWORD: 123
-      MYSQL_DATABASE: frappe
     volumes:
       - mariadb-data:/var/lib/mysql
 
-  redis-cache:
+  redis:
     image: redis:alpine
-    volumes:
-      - redis-cache-data:/data
-
-  redis-queue:
-    image: redis:alpine
-    volumes:
-      - redis-queue-data:/data
 
   frappe:
-    image: frappe/frappe-worker:v14
-    command: bash -c "bench init --skip-redis-config-generation frappe-bench && cd frappe-bench && bench get-app lms https://github.com/frappe/lms.git && bench new-site lms.goats.fr --admin-password=admin123 --db-host=mariadb --db-root-password=123 && bench --site lms.goats.fr install-app lms && bench start"
+    image: frappe/bench:latest
+    command: bash /workspace/init.sh
     environment:
       - SHELL=/bin/bash
-      - FRAPPE_PY=0.0.0.0:8000
-      - FRAPPE_SITE_NAME=lms.goats.fr
-      - REDIS_CACHE=redis-cache:6379
-      - REDIS_QUEUE=redis-queue:6379
+    working_dir: /home/frappe
     volumes:
-      - frappe-sites:/home/frappe/frappe-bench/sites
-      - frappe-logs:/home/frappe/frappe-bench/logs
+      - .:/workspace
     ports:
-      - 80:8000
-    depends_on:
-      - mariadb
-      - redis-cache
-      - redis-queue
+      - 8000:8000
+      - 9000:9000
 
 volumes:
   mariadb-data:
-  redis-cache-data:
-  redis-queue-data:
-  frappe-sites:
-  frappe-logs:
