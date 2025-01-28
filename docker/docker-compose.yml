@@ -39,7 +39,7 @@ services:
       - frappe-sites:/home/frappe/frappe-bench/sites
       - frappe-logs:/home/frappe/frappe-bench/logs
     ports:
-      - 80:8000
+      - 90:8000  # Changé pour le port 90
     depends_on:
       - mariadb
       - redis-cache
