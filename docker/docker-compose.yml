@@ -13,43 +13,31 @@ services:
       MYSQL_DATABASE: frappe
     volumes:
       - mariadb-data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
 
   redis-cache:
     image: redis:alpine
     volumes:
       - redis-cache-data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      timeout: 3s
-      retries: 10
 
   redis-queue:
     image: redis:alpine
     volumes:
       - redis-queue-data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      timeout: 3s
-      retries: 10
 
   frappe:
     image: frappe/frappe-worker:v14
-    command: bash -c "bench init --skip-redis-config-generation frappe-bench && cd frappe-bench && bench get-app lms https://github.com/frappe/lms.git && bench new-site a08k88gcg4s00scwsowg0koo.49.12.194.101.sslip.io --admin-password=admin123 --db-host=mariadb --db-root-password=123 && bench --site a08k88gcg4s00scwsowg0koo.49.12.194.101.sslip.io install-app lms && bench start"
+    command: bash -c "bench init --skip-redis-config-generation frappe-bench && cd frappe-bench && bench get-app lms https://github.com/frappe/lms.git && bench new-site lms.goats.fr --admin-password=admin123 --db-host=mariadb --db-root-password=123 && bench --site lms.goats.fr install-app lms && bench start"
     environment:
       - SHELL=/bin/bash
       - FRAPPE_PY=0.0.0.0:8000
-      - FRAPPE_SITE_NAME=a08k88gcg4s00scwsowg0koo.49.12.194.101.sslip.io
+      - FRAPPE_SITE_NAME=lms.goats.fr
       - REDIS_CACHE=redis-cache:6379
       - REDIS_QUEUE=redis-queue:6379
     volumes:
       - frappe-sites:/home/frappe/frappe-bench/sites
       - frappe-logs:/home/frappe/frappe-bench/logs
     ports:
-      - 8090:8000
+      - 80:8000
     depends_on:
       - mariadb
       - redis-cache
