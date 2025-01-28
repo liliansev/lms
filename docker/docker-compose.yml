@@ -36,7 +36,7 @@ services:
     working_dir: /home/frappe
     volumes:
       - type: bind
-        source: ./docker
+        source: .
         target: /scripts
       - frappe-sites:/home/frappe/frappe-bench/sites
       - frappe-logs:/home/frappe/frappe-bench/logs
