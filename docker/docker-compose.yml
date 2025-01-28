@@ -26,7 +26,7 @@ services:
 
   frappe:
     image: frappe/bench:latest
-    command: bash /workspace/init.sh
+    command: bash -c "chmod +x /workspace/init.sh && bash /workspace/init.sh"
     environment:
       - SHELL=/bin/bash
       - FRAPPE_SITE_NAME=${FRAPPE_SITE_NAME}
@@ -35,11 +35,11 @@ services:
       - NODE_VERSION_DEVELOP=18.16.0
     working_dir: /home/frappe
     volumes:
-      - .:/workspace
+      - ./docker:/workspace
       - frappe-sites:/home/frappe/frappe-bench/sites
       - frappe-logs:/home/frappe/frappe-bench/logs
     ports:
-      - 90:8000  # Changé pour le port 90
+      - 90:8000
     depends_on:
       - mariadb
       - redis-cache
