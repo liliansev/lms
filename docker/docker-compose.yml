@@ -26,7 +26,7 @@ services:
 
   frappe:
     image: frappe/bench:latest
-    command: bash -c "ls -la /scripts && bash /scripts/init.sh"
+    command: bash /scripts/init.sh
     environment:
       - SHELL=/bin/bash
       - FRAPPE_SITE_NAME=lms.goats.fr
