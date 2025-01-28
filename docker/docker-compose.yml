@@ -32,7 +32,7 @@ services:
 
   frappe:
     image: frappe/bench:latest
-    command: bash /docker/init.sh  # Correct path to the init.sh file
+    command: bash /docker/init.sh
     environment:
       - SHELL=/bin/bash
       - FRAPPE_SITE_NAME=lms.goats.fr
@@ -41,11 +41,11 @@ services:
       - NODE_VERSION_DEVELOP=18.16.0
     working_dir: /home/frappe
     volumes:
-      - ./docker:/docker  # Correctly bind the `docker` folder
+      - ./docker:/docker  # Monte le dossier docker contenant init.sh
       - frappe-sites:/home/frappe/frappe-bench/sites
       - frappe-logs:/home/frappe/frappe-bench/logs
     ports:
-      - 90:8000  # Expose port 8000 on port 90 of the host
+      - "90:8000"  # Mappe le port 8000 du conteneur sur le port 90 de l'hôte
     depends_on:
       - mariadb
       - redis-cache
